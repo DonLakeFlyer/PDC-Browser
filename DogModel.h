@@ -9,12 +9,15 @@
 
 #pragma once
 
-#include "QmlSqlTableModel.h"
+#include "ModelBase.h"
 
-class DogModel : public QmlSqlTableModel
+class DogModel : public ModelBase
 {
     Q_OBJECT
 
 public:
     DogModel(QObject* parent = Q_NULLPTR);
+
+    Q_INVOKABLE void clearFilter(void);
+    Q_INVOKABLE void filter(QString pack);
 };

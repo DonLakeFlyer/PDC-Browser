@@ -14,18 +14,17 @@
 #include <QtSql>
 
 PackModel::PackModel(QObject* parent)
-    : QmlSqlTableModel(parent)
+    : ModelBase(parent)
 {
     qmlRegisterUncreatableType<PackModel>("PDC", 1, 0, "PackModel", "Reference only");
 
-    setTable("Packs");
-    setEditStrategy(QSqlTableModel::OnManualSubmit);
-    if (!select()) {
-        qDebug() << "Select failed" << lastError();
+    setQuery("SELECT Packs.*, (SELECT COUNT(*) FROM DOGS WHERE DOGS.pack = Packs.name) AS dogCount FROM Packs");
+    if (!lastError().isValid()) {
+        qDebug() << lastError();
     }
-    setHeaderData(0, Qt::Horizontal, tr("name"));
 }
 
+#if 0
 QString PackModel::addPack(QString name)
 {
     QSqlRecord newRecord = record();
@@ -47,3 +46,4 @@ void PackModel::deletePack(int index)
     }
     submitAll();
 }
+#endif

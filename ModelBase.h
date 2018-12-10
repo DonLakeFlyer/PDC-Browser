@@ -11,14 +11,20 @@
 
 #include <QtSql>
 
-class QmlSqlTableModel : public QSqlTableModel
+class ModelBase : public QSqlQueryModel
 {
     Q_OBJECT
 
 public:
-    QmlSqlTableModel(QObject* parent = Q_NULLPTR);
+    ModelBase(QObject* parent = Q_NULLPTR);
 
-    // Overrides from QSqlTableModel
+    Q_INVOKABLE void refresh(void);
+    Q_INVOKABLE QString getData(int row, int column);
+
+    // Overrides from QSqlQueryModel
     QHash<int, QByteArray> roleNames() const override;
     QVariant data(const QModelIndex &index, int role) const override;
+
+protected:
+    void _setQuery(const QString& query);
 };

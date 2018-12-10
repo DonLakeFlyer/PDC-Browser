@@ -7,7 +7,7 @@
  *
  ****************************************************************************/
 
-#include "QmlSqlTableModel.h"
+#include "ModelBase.h"
 
 #include <QDebug>
 #include <QQmlEngine>
@@ -17,13 +17,13 @@
 #include <QImage>
 #include <QByteArray>
 
-QmlSqlTableModel::QmlSqlTableModel(QObject* parent)
-    : QSqlTableModel(parent)
+ModelBase::ModelBase(QObject* parent)
+    : QSqlQueryModel(parent)
 {
     QQmlEngine::setObjectOwnership(this, QQmlEngine::CppOwnership);
 }
 
-QHash<int, QByteArray> QmlSqlTableModel::roleNames() const
+QHash<int, QByteArray> ModelBase::roleNames() const
 {
    QHash<int, QByteArray> roles;
    // record() returns an empty QSqlRecord
@@ -34,7 +34,7 @@ QHash<int, QByteArray> QmlSqlTableModel::roleNames() const
    return roles;
 }
 
-QVariant QmlSqlTableModel::data(const QModelIndex &index, int role) const
+QVariant ModelBase::data(const QModelIndex &index, int role) const
 {
     QVariant value;
 
@@ -49,3 +49,23 @@ QVariant QmlSqlTableModel::data(const QModelIndex &index, int role) const
     }
     return value;
 }
+
+void ModelBase::refresh(void)
+{
+    setQuery(query().lastQuery());
+}
+
+QString ModelBase::getData(int row, int column)
+{
+    return record(row).value(column).toString();
+}
+
+void ModelBase::_setQuery(const QString& query)
+{
+    setQuery(query);
+    if (!lastError().isValid()) {
+        qDebug() << lastError();
+    }
+    qDebug() << "rowCount" << rowCount();
+}
+

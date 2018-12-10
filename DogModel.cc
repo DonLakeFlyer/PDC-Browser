@@ -14,14 +14,19 @@
 #include <QtSql>
 
 DogModel::DogModel(QObject* parent)
-    : QmlSqlTableModel(parent)
+    : ModelBase(parent)
 {
     qmlRegisterUncreatableType<DogModel>("PDC", 1, 0, "dogModel", "Reference only");
 
-    setTable("Dogs");
-    setEditStrategy(QSqlTableModel::OnManualSubmit);
-    if (!select()) {
-        qDebug() << "Select failed" << lastError();
-    }
-    setHeaderData(0, Qt::Horizontal, tr("name"));
+    clearFilter();
+}
+
+void DogModel::clearFilter(void)
+{
+    _setQuery("SELECT * FROM Dogs");
+}
+
+void DogModel::filter(QString pack)
+{
+    _setQuery(QStringLiteral("SELECT * FROM Dogs WHERE pack = '%1'").arg(pack));
 }

@@ -15,7 +15,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 HEADERS += \
     PDCDatabase.h \
-    QmlSqlTableModel.h \
+    ModelBase.h \
     PackModel.h \
     DogModel.h \
     PhotoModel.h \
@@ -23,7 +23,7 @@ HEADERS += \
 SOURCES += \
     main.cpp \
     PDCDatabase.cc \
-    QmlSqlTableModel.cc \
+    ModelBase.cc \
     PackModel.cc \
     DogModel.cc \
     PhotoModel.cc \

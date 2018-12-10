@@ -9,15 +9,12 @@
 
 #pragma once
 
-#include "QmlSqlTableModel.h"
+#include "ModelBase.h"
 
-class PackModel : public QmlSqlTableModel
+class PackModel : public ModelBase
 {
     Q_OBJECT
 
 public:
     PackModel(QObject* parent = Q_NULLPTR);
-
-    Q_INVOKABLE QString addPack(QString name);
-    Q_INVOKABLE void deletePack(int index);
 };

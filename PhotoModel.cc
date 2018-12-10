@@ -15,20 +15,27 @@
 #include <QImage>
 
 PhotoModel::PhotoModel(QObject* parent)
-    : QmlSqlTableModel(parent)
+    : ModelBase(parent)
 {
     qmlRegisterUncreatableType<PhotoModel>("PDC", 1, 0, "PhotoModel", "Reference only");
 
-    setTable("Photos");
-    setEditStrategy(QSqlTableModel::OnManualSubmit);
-    if (!select()) {
-        qDebug() << "Select failed" << lastError();
-    }
-    setHeaderData(0, Qt::Horizontal, tr("id"));
-    setHeaderData(1, Qt::Horizontal, tr("photo"));
-    setHeaderData(2, Qt::Horizontal, tr("dogName"));
+    clearFilter();
 }
 
+void PhotoModel::clearFilter(void)
+{
+    _setQuery("SELECT * FROM Photos");
+}
+
+void PhotoModel::filterPack(QString pack)
+{
+    _setQuery(QStringLiteral("SELECT Photos.* FROM Photos WHERE Photos.dog in (SELECT Dogs.name FROM Dogs WHERE Dogs.pack = '%1')").arg(pack));
+}
+
+void PhotoModel::filterDog(QString dog)
+{
+    _setQuery(QStringLiteral("SELECT * FROM Photos WHERE dog = '%1'").arg(dog));
+}
 
 void PhotoModel::registerImageProvider(QQmlApplicationEngine& engine)
 {
@@ -44,6 +51,8 @@ PhotosTableImageProvider::PhotosTableImageProvider(void)
 QImage PhotosTableImageProvider::requestImage(const QString &id, QSize *size, const QSize &requestedSize)
 {
     int photoId = id.toInt();
+
+    qDebug() << "requestImage" << id << photoId;
 
     QSqlQuery query(QStringLiteral("SELECT photo FROM Photos where id=%1").arg(photoId));
     if (query.next()) {

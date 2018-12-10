@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include "QmlSqlTableModel.h"
+#include "ModelBase.h"
 
 #include <QQuickImageProvider>
 #include <QQmlApplicationEngine>
@@ -22,12 +22,16 @@ public:
     QImage requestImage(const QString &id, QSize *size, const QSize &requestedSize) override;
 };
 
-class PhotoModel : public QmlSqlTableModel
+class PhotoModel : public ModelBase
 {
     Q_OBJECT
 
 public:
     PhotoModel(QObject* parent = Q_NULLPTR);
+
+    Q_INVOKABLE void clearFilter(void);
+    Q_INVOKABLE void filterPack(QString pack);
+    Q_INVOKABLE void filterDog(QString dog);
 
     void registerImageProvider(QQmlApplicationEngine& engine);
 };
