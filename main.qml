@@ -7,7 +7,7 @@ Window {
     visible: true
     width: 640
     height: 480
-    title: qsTr("Hello World")
+    title: qsTr("PDC Dog Browser")
 
     property var    _packModel:             pdcDB.packModel
     property var    _dogModel:              pdcDB.dogModel
@@ -15,6 +15,9 @@ Window {
     property string _dogModelPackFilter:    ""
     property string _photoModelPackFilter:  ""
     property string _photoModelDogFilter:   ""
+    property real   _headingPointSize:      30
+    property string _dogImageName
+    property string _dogImageUrl
 
     function clearAllFilters() {
         _dogModelPackFilter = ""
@@ -37,42 +40,34 @@ Window {
             Layout.fillWidth:   true
             Layout.fillHeight:  true
 
-            RowLayout {
-                Label { text: "Packs > " }
-
-                Label {
-                    text: "All Dogs"
-
-                    MouseArea {
-                        anchors.fill:   parent
-                        onClicked:      stack.push(dogComponent)
-                    }
-                }
+            Label {
+                font.pointSize: _headingPointSize
+                text: "Packs"
             }
 
-            TableView {
-                model:              _packModel
-                Layout.fillWidth:   true
-                Layout.fillHeight:  true
+            GridLayout {
+                columns: 3
 
-                onClicked: {
-                    _dogModelPackFilter = _packModel.getData(row, 0)
-                    _photoModelPackFilter = _dogModelPackFilter
-                    _dogModel.filter(_dogModelPackFilter)
-                    _photoModel.filterPack(_photoModelPackFilter)
-                    stack.push(dogComponent)
+                Button {
+                    text:               "Show All Packs"
+                    Layout.fillWidth:   true
+                    onClicked:          stack.push(dogComponent)
                 }
 
-                TableViewColumn {
-                    role: "name"
-                    title: "Name"
-                    width: 100
-                }
+                Repeater {
+                    model: _packModel
 
-                TableViewColumn {
-                    role: "dogcount"
-                    title: "Size"
-                    width: 100
+                    Button {
+                        text:               qsTr("%1 (%2)").arg(name).arg(dogcount)
+                        Layout.fillWidth:   true
+                        onClicked: {
+                            _dogModelPackFilter = name
+                            _photoModelPackFilter = _dogModelPackFilter
+                            _dogModel.filter(_dogModelPackFilter)
+                            _photoModel.filterPack(_photoModelPackFilter)
+                            stack.push(dogComponent)
+                        }
+                    }
                 }
             }
         }
@@ -87,7 +82,8 @@ Window {
 
             RowLayout {
                 Label {
-                    text: "Packs "
+                    font.pointSize: _headingPointSize
+                    text: " < "
 
                     MouseArea {
                         anchors.fill:   parent
@@ -99,40 +95,33 @@ Window {
                 }
 
                 Label {
-                    text: "> " + (_dogModelPackFilter == "" ? "Dogs" : _dogModelPackFilter) + " "
-                }
-
-                Label {
-                    text: "> All Photos"
-
-                    MouseArea {
-                        anchors.fill:   parent
-                        onClicked:      stack.push(photoComponent)
-                    }
+                    font.pointSize: _headingPointSize
+                    text: "Dogs"
                 }
             }
 
-            TableView {
-                model:              _dogModel
-                Layout.fillWidth:   true
-                Layout.fillHeight:  true
 
-                onClicked: {
-                    _photoModelDogFilter = _dogModel.getData(row, 0)
-                    _photoModel.filterDog(_photoModelDogFilter)
-                    stack.push(photoComponent)
+            GridLayout {
+                columns: 3
+
+                Button {
+                    text:               "All Dogs"
+                    Layout.fillWidth:   true
+                    onClicked:          stack.push(photoComponent)
                 }
 
-                TableViewColumn {
-                    role: "name"
-                    title: "Name"
-                    width: 100
-                }
+                Repeater {
+                    model: _dogModel
 
-                TableViewColumn {
-                    role: "pack"
-                    title: "Pack"
-                    width: 100
+                    Button {
+                        text:               qsTr("%1 %2 (%3)").arg(name).arg(alpha).arg(pack)
+                        Layout.fillWidth:   true
+                        onClicked: {
+                            _photoModelDogFilter = name
+                            _photoModel.filterDog(_photoModelDogFilter)
+                            stack.push(photoComponent)
+                        }
+                    }
                 }
             }
         }
@@ -147,20 +136,8 @@ Window {
 
             RowLayout {
                 Label {
-                    text: "Packs "
-
-                    MouseArea {
-                        anchors.fill:   parent
-                        onClicked: {
-                            clearAllFilters()
-                            stack.pop()
-                            stack.pop()
-                        }
-                    }
-                }
-
-                Label {
-                    text: "> " + (_photoModelPackFilter === "" ? "Dogs" : _photoModelPackFilter)
+                    font.pointSize: _headingPointSize
+                    text: " < "
 
                     MouseArea {
                         anchors.fill:   parent
@@ -177,7 +154,8 @@ Window {
                 }
 
                 Label {
-                    text: "> " + (_photoModelDogFilter === "" ? "Photos" : _photoModelDogFilter)
+                    font.pointSize: _headingPointSize
+                    text: "Photos"
                 }
             }
 
@@ -187,15 +165,21 @@ Window {
                 Layout.fillWidth:   true
                 Layout.fillHeight:  true
 
+                onClicked: {
+                    _dogImageName = _photoModel.getData(row, 2)
+                    _dogImageUrl = "image://Photos/" + _photoModel.getData(row, 0)
+                    stack.push(dogImageComponent)
+                }
+
                 rowDelegate: Rectangle{
                     color: "white"
-                    height: 100
+                    height: 200
                 }
 
                 TableViewColumn {
                     role: "id"
                     title: "Photo"
-                    width: 100
+                    width: 200
 
                     delegate: Image {
                         fillMode:   Image.PreserveAspectFit
@@ -211,4 +195,83 @@ Window {
             }
         }
     }
-}
+
+    Component {
+        id: dogImageComponent
+
+        ColumnLayout {
+            Layout.fillWidth:   true
+            Layout.fillHeight:  true
+
+            RowLayout {
+                Label {
+                    font.pointSize: _headingPointSize
+                    text: " < "
+
+                    MouseArea {
+                        anchors.fill:   parent
+                        onClicked:      stack.pop()
+                    }
+                }
+
+                Label {
+                    font.pointSize: _headingPointSize
+                    text:           _dogImageName
+                }
+            }
+
+            Flickable {
+                id:                 flick
+                Layout.fillWidth:   true
+                Layout.fillHeight:  true
+                contentWidth:       width
+                contentHeight:      height
+
+                PinchArea {
+                    width: Math.max(flick.contentWidth, flick.width)
+                    height: Math.max(flick.contentHeight, flick.height)
+
+                    property real initialWidth
+                    property real initialHeight
+
+                    onPinchStarted: {
+                        initialWidth = flick.contentWidth
+                        initialHeight = flick.contentHeight
+                    }
+
+                    onPinchUpdated: {
+                        // adjust content pos due to drag
+                        flick.contentX += pinch.previousCenter.x - pinch.center.x
+                        flick.contentY += pinch.previousCenter.y - pinch.center.y
+
+                        // resize content
+                        flick.resizeContent(initialWidth * pinch.scale, initialHeight * pinch.scale, pinch.center)
+                    }
+
+                    onPinchFinished: {
+                        // Move its content within bounds.
+                        flick.returnToBounds()
+                    }
+
+                    Image {
+                        id:         dogImage
+                        width:      flick.contentWidth
+                        height:     flick.contentHeight
+                        fillMode:   Image.PreserveAspectFit
+                        source:     _dogImageUrl
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: {
+                                flick.contentX = 0
+                                flick.contentY = 0
+                                flick.resizeContent(flick.width, flick.height, Qt.point(flick.width / 2, flick.height / 2))
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+    }
+ }

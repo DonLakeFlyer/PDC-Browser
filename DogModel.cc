@@ -23,10 +23,10 @@ DogModel::DogModel(QObject* parent)
 
 void DogModel::clearFilter(void)
 {
-    _setQuery("SELECT * FROM Dogs");
+    _setQuery("SELECT name, pack, CASE WHEN alpha = 1 THEN 'Alpha' ELSE '' END AS alpha FROM Dogs");
 }
 
 void DogModel::filter(QString pack)
 {
-    _setQuery(QStringLiteral("SELECT * FROM Dogs WHERE pack = '%1'").arg(pack));
+    _setQuery(QStringLiteral("SELECT name, pack, CASE WHEN alpha = 1 THEN 'Alpha' ELSE '' END AS alpha FROM Dogs WHERE pack = '%1'").arg(pack));
 }

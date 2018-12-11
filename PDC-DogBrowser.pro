@@ -36,7 +36,13 @@ DebugBuild {
     DESTDIR  = $${OUT_PWD}/release
 }
 
-QMAKE_POST_LINK += $$QMAKE_COPY $$IN_PWD/PDC.db /Users/Don/Documents
+android-g++ {
+    my_files.path = /assets
+    my_files.files = $$IN_PWD/PDC.db
+    INSTALLS = my_files
+} else {
+     QMAKE_POST_LINK += $$QMAKE_COPY $$IN_PWD/PDC.db /Users/Don/Documents
+}
 
 # Additional import path used to resolve QML modules in Qt Creator's code model
 QML_IMPORT_PATH =

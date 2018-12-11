@@ -18,8 +18,11 @@
 
 PDCDatabase::PDCDatabase()
 {
+    QString appData = QStandardPaths::writableLocation(QStandardPaths::StandardLocation::AppDataLocation);
+    QString dbFile = appData + "/PDC.db";
+
     _db = QSqlDatabase::addDatabase("QSQLITE");
-    _db.setDatabaseName("/Users/Don/Documents/PDC.db");
+    _db.setDatabaseName(dbFile);
     if (!_db.open()) {
         qWarning() << "Open failed" << _db.lastError().driverText() << _db.lastError().databaseText();
     }

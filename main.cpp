@@ -1,6 +1,8 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QStandardPaths>
+#include <QFile>
 
 #include "PDCDatabase.h"
 
@@ -11,6 +13,18 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
+
+    QFile dbFile;
+    QString appData = QStandardPaths::writableLocation(QStandardPaths::StandardLocation::AppDataLocation);
+    QDir appDataDir(appData);
+    qDebug() << "appDataDir" << appDataDir.exists();
+    dbFile.setFileName("assets:/PDC.db");
+    qDebug() << "exists" << dbFile.exists();
+    QString writableDB = appData + "/PDC.db";
+    QFile oldDBFile(writableDB);
+    oldDBFile.remove();
+    qDebug() << "copy" << writableDB << dbFile.copy(writableDB);
+    QFile::setPermissions(writableDB, QFile::WriteOwner | QFile::ReadOwner);
 
     PDCDatabase pdcDB;
     engine.rootContext()->setContextProperty("pdcDB", &pdcDB);
