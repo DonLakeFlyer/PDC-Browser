@@ -18,15 +18,27 @@ DogModel::DogModel(QObject* parent)
 {
     qmlRegisterUncreatableType<DogModel>("PDC", 1, 0, "dogModel", "Reference only");
 
+    _baseSelect = QStringLiteral("SELECT *, "
+                                        "CASE "
+                                            "WHEN alpha = 1 THEN 'A' "
+                                            "ELSE ' ' "
+                                            "END AS alphaString, "
+                                        "CASE "
+                                            "WHEN sex = 1 THEN 'F' "
+                                            "WHEN sex = 2 THEN 'M' "
+                                            "ELSE 'U' "
+                                        "END AS sexString "
+                                 "FROM Dogs ");
+
     clearFilter();
 }
 
 void DogModel::clearFilter(void)
 {
-    _setQuery("SELECT name, pack, CASE WHEN alpha = 1 THEN 'Alpha' ELSE '' END AS alpha FROM Dogs");
+    _setQuery(_baseSelect);
 }
 
 void DogModel::filter(QString pack)
 {
-    _setQuery(QStringLiteral("SELECT name, pack, CASE WHEN alpha = 1 THEN 'Alpha' ELSE '' END AS alpha FROM Dogs WHERE pack = '%1'").arg(pack));
+    _setQuery(_baseSelect + QStringLiteral("WHERE pack = '%1'").arg(pack));
 }

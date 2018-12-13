@@ -20,4 +20,7 @@ public:
 
     Q_INVOKABLE void clearFilter(void);
     Q_INVOKABLE void filter(QString pack);
+
+private:
+    QString _baseSelect;
 };

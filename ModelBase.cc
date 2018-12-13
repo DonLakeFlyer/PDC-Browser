@@ -28,8 +28,10 @@ QHash<int, QByteArray> ModelBase::roleNames() const
    QHash<int, QByteArray> roles;
    // record() returns an empty QSqlRecord
    for (int i = 0; i < this->record().count(); i ++) {
-       roles.insert(Qt::UserRole + i + 1, record().fieldName(i).toLower().toUtf8());
-       //qDebug() << i << record().fieldName(i).toLower().toUtf8();
+       QString columnName = record().fieldName(i);
+       QString lowerColumnName = columnName[0].toLower() + columnName.right(columnName.count() - 1);
+       roles.insert(Qt::UserRole + i + 1, lowerColumnName.toUtf8());
+       qDebug() << i << lowerColumnName;
    }
    return roles;
 }
@@ -63,9 +65,9 @@ QString ModelBase::getData(int row, int column)
 void ModelBase::_setQuery(const QString& query)
 {
     setQuery(query);
+    qDebug() << "_setQuery" << query << rowCount();
     if (!lastError().isValid()) {
         qDebug() << lastError();
     }
-    qDebug() << "rowCount" << rowCount();
 }
 

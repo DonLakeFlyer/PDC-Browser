@@ -4,6 +4,7 @@ import QtQuick.Controls 1.2
 import QtQuick.Layouts  1.2
 
 Window {
+    id: window
     visible: true
     width: 640
     height: 480
@@ -16,6 +17,7 @@ Window {
     property string _photoModelPackFilter:  ""
     property string _photoModelDogFilter:   ""
     property real   _headingPointSize:      30
+    property real   _imageTextPointSize:    20
     property string _dogImageName
     property string _dogImageUrl
 
@@ -54,11 +56,17 @@ Window {
                     onClicked:          stack.push(dogComponent)
                 }
 
+                Button {
+                    text:               "Photo Search"
+                    Layout.fillWidth:   true
+                    onClicked:          stack.push(searchComponent)
+                }
+
                 Repeater {
                     model: _packModel
 
                     Button {
-                        text:               qsTr("%1 (%2)").arg(name).arg(dogcount)
+                        text:               qsTr("%1 (%2)").arg(name).arg(dogCount)
                         Layout.fillWidth:   true
                         onClicked: {
                             _dogModelPackFilter = name
@@ -114,7 +122,7 @@ Window {
                     model: _dogModel
 
                     Button {
-                        text:               qsTr("%1 %2 (%3)").arg(name).arg(alpha).arg(pack)
+                        text:               qsTr("%1 (%2%3-%4) %5").arg(name).arg(sexString).arg(alphaString == "A" ? "-A" : "").arg(pack).arg(collarFreq)
                         Layout.fillWidth:   true
                         onClicked: {
                             _photoModelDogFilter = name
@@ -131,8 +139,6 @@ Window {
         id: photoComponent
 
         ColumnLayout {
-            Layout.fillWidth:   true
-            Layout.fillHeight:  true
 
             RowLayout {
                 Label {
@@ -159,38 +165,62 @@ Window {
                 }
             }
 
-
-            TableView {
-                model:              _photoModel
+            Flickable {
                 Layout.fillWidth:   true
                 Layout.fillHeight:  true
+                contentWidth:       grid.width
+                contentHeight:      grid.height
 
-                onClicked: {
-                    _dogImageName = _photoModel.getData(row, 2)
-                    _dogImageUrl = "image://Photos/" + _photoModel.getData(row, 0)
-                    stack.push(dogImageComponent)
-                }
+                Grid {
+                    id:             grid
+                    columns:        4
+                    columnSpacing:  0
+                    rowSpacing:     0
 
-                rowDelegate: Rectangle{
-                    color: "white"
-                    height: 200
-                }
+                    property real imageWidth: width / 4
 
-                TableViewColumn {
-                    role: "id"
-                    title: "Photo"
-                    width: 200
+                    Repeater {
+                        model: _photoModel
 
-                    delegate: Image {
-                        fillMode:   Image.PreserveAspectFit
-                        source:     styleData.value ? "image://Photos/" + styleData.value : ""
+                        Image {
+                            width: window.width / 4
+                            height: width
+                            fillMode:           Image.PreserveAspectFit
+                            source:             "image://Photos/" + id
+
+                            Rectangle {
+                                anchors.fill:   nameLabel
+                                color:          "black"
+                                opacity:        0.25
+                            }
+
+                            Label {
+                                id:                     nameLabel
+                                anchors.margins:        5
+                                anchors.topMargin:      (parent.height - parent.paintedHeight) / 2
+                                anchors.top:            parent.top
+                                anchors.left:           leftLabel ? undefined: parent.left
+                                anchors.right:          leftLabel ? parent.right : undefined
+                                color:                  "white"
+                                font.pointSize:         _imageTextPointSize
+                                text:                   dog
+
+                                property bool leftLabel: leftPhoto === 1
+
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+
+                                onClicked: {
+                                    _dogImageName = dog
+                                    _dogImageUrl = "image://Photos/" + id
+                                    stack.push(dogImageComponent)
+                                }
+                            }
+
+                        }
                     }
-                }
-
-                TableViewColumn {
-                    role: "dog"
-                    title: "Dog"
-                    width: 100
                 }
             }
         }
@@ -199,33 +229,12 @@ Window {
     Component {
         id: dogImageComponent
 
-        ColumnLayout {
-            Layout.fillWidth:   true
-            Layout.fillHeight:  true
-
-            RowLayout {
-                Label {
-                    font.pointSize: _headingPointSize
-                    text: " < "
-
-                    MouseArea {
-                        anchors.fill:   parent
-                        onClicked:      stack.pop()
-                    }
-                }
-
-                Label {
-                    font.pointSize: _headingPointSize
-                    text:           _dogImageName
-                }
-            }
-
+        Item {
             Flickable {
-                id:                 flick
-                Layout.fillWidth:   true
-                Layout.fillHeight:  true
-                contentWidth:       width
-                contentHeight:      height
+                id:             flick
+                anchors.fill:   parent
+                contentWidth:   width
+                contentHeight:  height
 
                 PinchArea {
                     width: Math.max(flick.contentWidth, flick.width)
@@ -272,6 +281,145 @@ Window {
                 }
             }
 
+            Rectangle {
+                anchors.fill:   labelRow
+                color:          "black"
+                opacity:        0.25
+            }
+
+            RowLayout {
+                id: labelRow
+
+                Label {
+                    color:          "white"
+                    font.pointSize: _headingPointSize
+                    text:           " < "
+
+                    MouseArea {
+                        anchors.fill:   parent
+                        onClicked:      stack.pop()
+                    }
+                }
+
+                Label {
+                    color:          "white"
+                    font.pointSize: _headingPointSize
+                    text:           _dogImageName
+                }
+            }
         }
     }
- }
+
+    Component {
+        id: searchComponent
+
+        Column {
+            Layout.fillWidth:   true
+            Layout.fillHeight:  true
+
+            ExclusiveGroup { id: collarGroup }
+            ExclusiveGroup { id: blackTipGroup }
+            ExclusiveGroup { id: sexGroup }
+            ExclusiveGroup { id: imageSideGroup }
+
+            RowLayout {
+                id: labelRow
+
+                Label {
+                    font.pointSize: _headingPointSize
+                    text:           " < Search"
+
+                    MouseArea {
+                        anchors.fill:   parent
+                        onClicked:      stack.pop()
+                    }
+                }
+            }
+
+            RowLayout {
+                RadioButton {
+                    text:           "Collared"
+                    exclusiveGroup: collarGroup
+                    property int value: 1
+                }
+                RadioButton {
+                    text:           "Not Collared"
+                    exclusiveGroup: collarGroup
+                    property int value: 2
+                }
+                RadioButton {
+                    text:           "Any"
+                    checked:        true
+                    exclusiveGroup: collarGroup
+                    property int value: 0
+                }
+            }
+
+            RowLayout {
+                RadioButton {
+                    text:           "Black Tip"
+                    exclusiveGroup: blackTipGroup
+                    property int value: 1
+                }
+                RadioButton {
+                    text:           "No Black Tip"
+                    exclusiveGroup: blackTipGroup
+                    property int value: 2
+                }
+                RadioButton {
+                    text:           "Any"
+                    checked:        true
+                    exclusiveGroup: blackTipGroup
+                    property int value: 0
+                }
+            }
+
+            RowLayout {
+                RadioButton {
+                    text:           "Female"
+                    exclusiveGroup: sexGroup
+                    property int sexValue: 1
+                }
+                RadioButton {
+                    text:           "Male"
+                    exclusiveGroup: sexGroup
+                    property int sexValue: 2
+                }
+                RadioButton {
+                    text:           "Any"
+                    checked:        true
+                    exclusiveGroup: sexGroup
+                    property int sexValue: 0
+                }
+            }
+
+            RowLayout {
+                RadioButton {
+                    text:           "Left"
+                    exclusiveGroup: imageSideGroup
+                    property int photoValue: 1
+                }
+                RadioButton {
+                    text:           "Right"
+                    exclusiveGroup: imageSideGroup
+                    property int photoValue: 2
+                }
+                RadioButton {
+                    text:           "Any"
+                    checked:        true
+                    exclusiveGroup: imageSideGroup
+                    property int photoValue: 0
+                }
+            }
+
+            Button {
+                text: "Search Photos"
+                onClicked: {
+                    _photoModel.filterPhoto(collarGroup.current.value, blackTipGroup.current.value, sexGroup.current.sexValue, imageSideGroup.current.photoValue)
+                    stack.pop()
+                    stack.push(photoComponent)
+                }
+            }
+        }
+    }
+}

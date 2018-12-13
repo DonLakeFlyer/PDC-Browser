@@ -32,6 +32,7 @@ public:
     Q_INVOKABLE void clearFilter(void);
     Q_INVOKABLE void filterPack(QString pack);
     Q_INVOKABLE void filterDog(QString dog);
+    Q_INVOKABLE void filterPhoto(int collared, int blackTip, int sex, int photoSide);
 
     void registerImageProvider(QQmlApplicationEngine& engine);
 };
