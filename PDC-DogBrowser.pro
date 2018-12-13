@@ -30,18 +30,47 @@ SOURCES += \
 
 RESOURCES += qml.qrc
 
+CONFIG(debug, debug|release) {
+    message(Debug flavor)
+    CONFIG += DebugBuild
+} else:CONFIG(release, debug|release) {
+    message(Release flavor)
+    CONFIG += ReleaseBuild
+} else {
+    error(Unsupported build flavor)
+}
+
 DebugBuild {
     DESTDIR  = $${OUT_PWD}/debug
 } else {
     DESTDIR  = $${OUT_PWD}/release
 }
+BASEDIR      = $$IN_PWD
+
 
 android-g++ {
     my_files.path = /assets
     my_files.files = $$IN_PWD/PDC.db
     INSTALLS = my_files
-} else {
-     QMAKE_POST_LINK += $$QMAKE_COPY $$IN_PWD/PDC.db /Users/Don/Documents
+    DEFINES += __android__
+} else : macx {
+     QMAKE_POST_LINK += $$QMAKE_COPY $$IN_PWD/PDC.db $$DESTDIR/$${TARGET}.app/Contents/MacOS
+
+    ReleaseBuild {
+        # We cd to release directory so we can run macdeployqt without a path to the
+        # qgroundcontrol.app file. If you specify a path to the .app file the symbolic
+        # links to plugins will not be created correctly.
+        QMAKE_POST_LINK += && cd $${DESTDIR} && $$dirname(QMAKE_QMAKE)/macdeployqt $${TARGET}.app -appstore-compliant -verbose=2 -qmldir=$${BASEDIR}
+
+        # macdeployqt is missing some relocations once in a while. "Fix" it:
+        #QMAKE_POST_LINK += && python $$BASEDIR/tools/osxrelocator.py $${TARGET}.app/Contents @rpath @executable_path/../Frameworks -r > /dev/null 2>&1
+
+        # Create package
+        QMAKE_POST_LINK += && hdiutil create /tmp/tmp.dmg -ov -volname "$${TARGET}-$${MAC_VERSION}" -fs HFS+ -srcfolder "$${DESTDIR}/"
+        QMAKE_POST_LINK += && mkdir -p $${DESTDIR}/package
+        QMAKE_POST_LINK += && hdiutil convert /tmp/tmp.dmg -format UDBZ -o $${DESTDIR}/package/$${TARGET}.dmg
+        QMAKE_POST_LINK += && rm /tmp/tmp.dmg
+    }
 }
 
 # Additional import path used to resolve QML modules in Qt Creator's code model

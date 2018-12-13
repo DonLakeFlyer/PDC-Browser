@@ -18,9 +18,14 @@
 
 PDCDatabase::PDCDatabase()
 {
+#ifdef __android__
     QString appData = QStandardPaths::writableLocation(QStandardPaths::StandardLocation::AppDataLocation);
     QString dbFile = appData + "/PDC.db";
+#else
+    QString dbFile = QCoreApplication::applicationDirPath() + "/PDC.db";
+#endif
 
+    qDebug() << "Opening DB File" << dbFile;
     _db = QSqlDatabase::addDatabase("QSQLITE");
     _db.setDatabaseName(dbFile);
     if (!_db.open()) {

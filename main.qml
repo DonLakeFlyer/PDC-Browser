@@ -1,6 +1,6 @@
 import QtQuick 2.11
 import QtQuick.Window 2.11
-import QtQuick.Controls 1.2
+import QtQuick.Controls 1.4
 import QtQuick.Layouts  1.2
 
 Window {
@@ -272,9 +272,17 @@ Window {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
+                                flick.resizeContent(flick.width, flick.height, Qt.point(flick.width / 2, flick.height / 2))
                                 flick.contentX = 0
                                 flick.contentY = 0
-                                flick.resizeContent(flick.width, flick.height, Qt.point(flick.width / 2, flick.height / 2))
+                            }
+                            onWheel: {
+                                if (wheel.angleDelta.y > 0) {
+                                    flick.resizeContent(flick.contentWidth * 1.1, flick.contentHeight * 1.1, Qt.point(flick.width / 2, flick.height / 2))
+                                } else {
+                                    flick.resizeContent(flick.contentWidth * 0.9, flick.contentHeight * 0.9, Qt.point(flick.width / 2, flick.height / 2))
+                                }
+                                wheel.accepted = true
                             }
                         }
                     }
@@ -283,7 +291,7 @@ Window {
 
             Rectangle {
                 anchors.fill:   labelRow
-                color:          "black"
+                color:          "white"
                 opacity:        0.25
             }
 
@@ -291,7 +299,6 @@ Window {
                 id: labelRow
 
                 Label {
-                    color:          "white"
                     font.pointSize: _headingPointSize
                     text:           " < "
 
@@ -302,7 +309,6 @@ Window {
                 }
 
                 Label {
-                    color:          "white"
                     font.pointSize: _headingPointSize
                     text:           _dogImageName
                 }
@@ -316,11 +322,9 @@ Window {
         Column {
             Layout.fillWidth:   true
             Layout.fillHeight:  true
+            spacing:            10
 
-            ExclusiveGroup { id: collarGroup }
-            ExclusiveGroup { id: blackTipGroup }
             ExclusiveGroup { id: sexGroup }
-            ExclusiveGroup { id: imageSideGroup }
 
             RowLayout {
                 id: labelRow
@@ -333,44 +337,6 @@ Window {
                         anchors.fill:   parent
                         onClicked:      stack.pop()
                     }
-                }
-            }
-
-            RowLayout {
-                RadioButton {
-                    text:           "Collared"
-                    exclusiveGroup: collarGroup
-                    property int value: 1
-                }
-                RadioButton {
-                    text:           "Not Collared"
-                    exclusiveGroup: collarGroup
-                    property int value: 2
-                }
-                RadioButton {
-                    text:           "Any"
-                    checked:        true
-                    exclusiveGroup: collarGroup
-                    property int value: 0
-                }
-            }
-
-            RowLayout {
-                RadioButton {
-                    text:           "Black Tip"
-                    exclusiveGroup: blackTipGroup
-                    property int value: 1
-                }
-                RadioButton {
-                    text:           "No Black Tip"
-                    exclusiveGroup: blackTipGroup
-                    property int value: 2
-                }
-                RadioButton {
-                    text:           "Any"
-                    checked:        true
-                    exclusiveGroup: blackTipGroup
-                    property int value: 0
                 }
             }
 
@@ -393,29 +359,111 @@ Window {
                 }
             }
 
-            RowLayout {
-                RadioButton {
-                    text:           "Left"
-                    exclusiveGroup: imageSideGroup
-                    property int photoValue: 1
-                }
-                RadioButton {
-                    text:           "Right"
-                    exclusiveGroup: imageSideGroup
-                    property int photoValue: 2
-                }
-                RadioButton {
-                    text:           "Any"
-                    checked:        true
-                    exclusiveGroup: imageSideGroup
-                    property int photoValue: 0
-                }
+            CheckBox {
+                id:                         collared
+                text:                       checkedState === Qt.Checked ?
+                                                "HAS Collar" :
+                                                (checkedState === Qt.Unchecked ? "HAS NO Collar" : "Collar Doesn't Matter")
+                checkedState:               Qt.PartiallyChecked
+                partiallyCheckedEnabled:    true
             }
+
+            CheckBox {
+                id:                         blackTip
+                text:                       checkedState === Qt.Checked ?
+                                                "Black In Tail Tip" :
+                                                (checkedState === Qt.Unchecked ? "Fully White Tail Tip" : "Tail Tip Doesn't Matter")
+                checkedState:               Qt.PartiallyChecked
+                partiallyCheckedEnabled:    true
+            }
+
+            Label {
+                text: "Left Side Markings"
+            }
+
+            CheckBox {
+                id:                         markingLeftLeg
+                text:                       checkedState === Qt.Checked ?
+                                                "Front Leg HAS White Marking" :
+                                                (checkedState === Qt.Unchecked ? "Front Leg HAS NO White Marking" : "Front Leg Marking Doesn't Matter")
+                checkedState:               Qt.PartiallyChecked
+                partiallyCheckedEnabled:    true
+            }
+
+            CheckBox {
+                id:                         markingLeftShoulder
+                text:                       checkedState === Qt.Checked ?
+                                                "Front Shoulder HAS White Marking" :
+                                                (checkedState === Qt.Unchecked ? "Front Shoulder HAS NO White Marking" : "Front Shoulder Marking Doesn't Matter")
+                checkedState:               Qt.PartiallyChecked
+                partiallyCheckedEnabled:    true
+            }
+
+            CheckBox {
+                id:                         markingLeftAbdomen
+                text:                       checkedState === Qt.Checked ?
+                                                "Abdomen HAS White Marking" :
+                                                (checkedState === Qt.Unchecked ? "Abdomen HAS NO White Marking" : "Abdomen Marking Doesn't Matter")
+                checkedState:               Qt.PartiallyChecked
+                partiallyCheckedEnabled:    true
+            }
+
+            CheckBox {
+                id:                         markingLeftHind
+                text:                       checkedState === Qt.Checked ?
+                                                "Hind HAS White Marking" :
+                                                (checkedState === Qt.Unchecked ? "Hind HAS NO White Marking" : "Hind Marking Doesn't Matter")
+                checkedState:               Qt.PartiallyChecked
+                partiallyCheckedEnabled:    true
+            }
+
+            Label {
+                text: "Right Side Markings"
+            }
+
+            CheckBox {
+                id:                         markingRightLeg
+                text:                       checkedState === Qt.Checked ?
+                                                "Front Leg HAS White Marking" :
+                                                (checkedState === Qt.Unchecked ? "Front Leg HAS NO White Marking" : "Front Leg Marking Doesn't Matter")
+                checkedState:               Qt.PartiallyChecked
+                partiallyCheckedEnabled:    true
+            }
+
+            CheckBox {
+                id:                         markingRightShoulder
+                text:                       checkedState === Qt.Checked ?
+                                                "Front Shoulder HAS White Marking" :
+                                                (checkedState === Qt.Unchecked ? "Front Shoulder HAS NO White Marking" : "Front Shoulder Marking Doesn't Matter")
+                checkedState:               Qt.PartiallyChecked
+                partiallyCheckedEnabled:    true
+            }
+
+            CheckBox {
+                id:                         markingRightAbdomen
+                text:                       checkedState === Qt.Checked ?
+                                                "Abdomen HAS White Marking" :
+                                                (checkedState === Qt.Unchecked ? "Abdomen HAS NO White Marking" : "Abdomen Marking Doesn't Matter")
+                checkedState:               Qt.PartiallyChecked
+                partiallyCheckedEnabled:    true
+            }
+
+            CheckBox {
+                id:                         markingRightHind
+                text:                       checkedState === Qt.Checked ?
+                                                "Hind HAS White Marking" :
+                                                (checkedState === Qt.Unchecked ? "Hind HAS NO White Marking" : "Hind Marking Doesn't Matter")
+                checkedState:               Qt.PartiallyChecked
+                partiallyCheckedEnabled:    true
+            }
+
 
             Button {
                 text: "Search Photos"
                 onClicked: {
-                    _photoModel.filterPhoto(collarGroup.current.value, blackTipGroup.current.value, sexGroup.current.sexValue, imageSideGroup.current.photoValue)
+                    _photoModel.filterPhoto(collared.checkedState, blackTip.checkedState, sexGroup.current.sexValue,
+                                            markingLeftLeg.checkedState, markingLeftShoulder.checkedState, markingLeftAbdomen.checkedState, markingLeftHind.checkedState,
+                                            markingRightLeg.checkedState, markingRightShoulder.checkedState, markingRightAbdomen.checkedState, markingRightHind.checkedState)
                     stack.pop()
                     stack.push(photoComponent)
                 }

@@ -32,7 +32,9 @@ public:
     Q_INVOKABLE void clearFilter(void);
     Q_INVOKABLE void filterPack(QString pack);
     Q_INVOKABLE void filterDog(QString dog);
-    Q_INVOKABLE void filterPhoto(int collared, int blackTip, int sex, int photoSide);
+    Q_INVOKABLE void filterPhoto(int collared, int blackTip, int sex,
+                                 int markingLeftLeg, int markingLeftShoulder, int markingLeftAbdomen, int markingLeftHind,
+                                 int markingRightLeg, int markingRightShoulder, int markingRightAbdomen, int markingRightHind);
 
     void registerImageProvider(QQmlApplicationEngine& engine);
 };

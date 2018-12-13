@@ -14,6 +14,7 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
 
+#ifdef __android__
     QFile dbFile;
     QString appData = QStandardPaths::writableLocation(QStandardPaths::StandardLocation::AppDataLocation);
     QDir appDataDir(appData);
@@ -25,6 +26,7 @@ int main(int argc, char *argv[])
     oldDBFile.remove();
     qDebug() << "copy" << writableDB << dbFile.copy(writableDB);
     QFile::setPermissions(writableDB, QFile::WriteOwner | QFile::ReadOwner);
+#endif
 
     PDCDatabase pdcDB;
     engine.rootContext()->setContextProperty("pdcDB", &pdcDB);

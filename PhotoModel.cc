@@ -37,23 +37,37 @@ void PhotoModel::filterDog(QString dog)
     _setQuery(QStringLiteral("SELECT * FROM Photos WHERE dog = '%1'").arg(dog));
 }
 
-void PhotoModel::filterPhoto(int collared, int blackTip, int sex, int photoSide)
+void PhotoModel::filterPhoto(int collared, int blackTip, int sex,
+                             int markingLeftLeg, int markingLeftShoulder, int markingLeftAbdomen, int markingLeftHind,
+                             int markingRightLeg, int markingRightShoulder, int markingRightAbdomen, int markingRightHind)
 {
     QStringList rgWhere;
 
     QString baseQuery = QString("SELECT Photos.* FROM Photos WHERE Photos.dog in (SELECT Dogs.name FROM Dogs %1)");
 
-    if (collared != 0) {
-        rgWhere << QStringLiteral("collarDate IS %1 NULL ").arg(collared == 1 ? "NOT" : "");
-    }
-    if (blackTip != 0) {
-        rgWhere << QStringLiteral("markingBlackTip %1 = 1 ").arg(blackTip == 2 ? "NOT" : "");
+    if (collared != 1) {
+        rgWhere << QStringLiteral("collarDate IS %1 NULL ").arg(collared == 0 ? "" : "NOT");
     }
     if (sex != 0) {
         rgWhere << QStringLiteral("sex = %1 ").arg(sex);
     }
-    if (photoSide != 0) {
-        rgWhere << QStringLiteral("leftPhoto = %1 ").arg(photoSide  == 1 ? 1 : 0);
+
+    QList<int*> rgMarkingValue;
+    QStringList rgMarkingColumn;
+
+    rgMarkingValue << &blackTip <<
+                      &markingLeftLeg << &markingLeftShoulder << &markingLeftAbdomen << &markingLeftHind <<
+                      &markingRightLeg << &markingRightShoulder << &markingRightAbdomen << &markingRightHind;
+    rgMarkingColumn << "markingBlackTip" <<
+                       "markingLeftFrontLeg" << "markingLeftShoulder" << "markingLeftAbdomen" << "markingLeftHind" <<
+                     "markingRightFrontLeg" << "markingRightShoulder" << "markingRightAbdomen" << "markingRightHind";
+    for (int i=0; i<rgMarkingValue.count(); i++) {
+        int markingValue = *rgMarkingValue[i];
+        QString markingColumn = rgMarkingColumn[i];
+
+        if (markingValue != 1) {
+            rgWhere << QStringLiteral("%1 = %2 ").arg(markingColumn).arg(markingValue  == 0 ? 0 : 1);
+        }
     }
 
     QString whereQuery;

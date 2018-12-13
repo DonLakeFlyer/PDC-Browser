@@ -18,7 +18,7 @@ PackModel::PackModel(QObject* parent)
 {
     qmlRegisterUncreatableType<PackModel>("PDC", 1, 0, "PackModel", "Reference only");
 
-    setQuery("SELECT Packs.*, (SELECT COUNT(*) FROM DOGS WHERE DOGS.pack = Packs.name) AS dogCount FROM Packs");
+    setQuery("SELECT Packs.*, (SELECT COUNT(*) FROM DOGS WHERE DOGS.pack = Packs.name) AS dogCount FROM Packs ORDER BY name");
     if (!lastError().isValid()) {
         qDebug() << lastError();
     }

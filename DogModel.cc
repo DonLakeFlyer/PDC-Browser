@@ -28,17 +28,17 @@ DogModel::DogModel(QObject* parent)
                                             "WHEN sex = 2 THEN 'M' "
                                             "ELSE 'U' "
                                         "END AS sexString "
-                                 "FROM Dogs ");
+                                 "FROM Dogs %1 ORDER BY name ");
 
     clearFilter();
 }
 
 void DogModel::clearFilter(void)
 {
-    _setQuery(_baseSelect);
+    _setQuery(_baseSelect.arg(""));
 }
 
 void DogModel::filter(QString pack)
 {
-    _setQuery(_baseSelect + QStringLiteral("WHERE pack = '%1'").arg(pack));
+    _setQuery(_baseSelect.arg(QStringLiteral(" WHERE pack = '%1' ").arg(pack)));
 }
