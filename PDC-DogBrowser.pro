@@ -1,4 +1,4 @@
-QT += quick sql
+QT += quick sql printsupport
 
 CONFIG += c++11
 
@@ -19,6 +19,7 @@ HEADERS += \
     PackModel.h \
     DogModel.h \
     PhotoModel.h \
+    Print.h \
 
 SOURCES += \
     main.cpp \
@@ -27,6 +28,7 @@ SOURCES += \
     PackModel.cc \
     DogModel.cc \
     PhotoModel.cc \
+    Print.cc \
 
 RESOURCES += qml.qrc
 

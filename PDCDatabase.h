@@ -28,6 +28,8 @@ public:
     Q_PROPERTY(DogModel* dogModel READ dogModel CONSTANT)
     Q_PROPERTY(PhotoModel* photoModel READ photoModel CONSTANT)
 
+    Q_INVOKABLE void print(bool onPackPerFile);
+
     PackModel* packModel(void) { return _packModel; }
     DogModel* dogModel(void) { return _dogModel; }
     PhotoModel* photoModel(void) { return _photoModel; }

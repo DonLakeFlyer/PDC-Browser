@@ -42,9 +42,23 @@ Window {
             Layout.fillWidth:   true
             Layout.fillHeight:  true
 
-            Label {
-                font.pointSize: _headingPointSize
-                text: "Packs"
+            RowLayout {
+
+                Label {
+                    font.pointSize: _headingPointSize
+                    text:           "Packs"
+                }
+
+                Button {
+                    text:       "Print"
+                    onClicked:  pdcDB.print(onePackPerFile.checked)
+                }
+
+                CheckBox {
+                    id:         onePackPerFile
+                    text:       "One Pack Per File"
+                    checked:    true
+                }
             }
 
             GridLayout {
