@@ -22,18 +22,32 @@ void Print::_printDoc(const QTextDocument& doc, const QString& filename)
     doc.print(&printer);
 }
 
-void Print::_initDoc(QTextCursor& cursor, QTextTableFormat& tableFormat)
+void Print::_initDoc(QTextCursor& cursor)
 {
     QTextFrameFormat frameFormat;
     frameFormat.setWidth(QTextLength(QTextLength::PercentageLength, 100));
 
     QTextFrame* frame = cursor.insertFrame(frameFormat);
     QTextCursor frameCursor = frame->firstCursorPosition();
+}
 
+QTextTableFormat Print::_tableFormat(int cColumns)
+{
+    QTextTableFormat tableFormat;
+
+    tableFormat.setBorder(1);
+    tableFormat.setBorderStyle(QTextFrameFormat::BorderStyle_Solid);
+    tableFormat.setBorderBrush(QBrush(QColor("black")));
+    tableFormat.setWidth(QTextLength(QTextLength::PercentageLength, 100));
+
+    double columnPercent = 100.0 / cColumns;
     QVector<QTextLength> rgColumnTextLength;
-    rgColumnTextLength.append(QTextLength(QTextLength::PercentageLength, 50));
-    rgColumnTextLength.append(QTextLength(QTextLength::PercentageLength, 50));
+    for (int i=0; i<cColumns; i++) {
+        rgColumnTextLength.append(QTextLength(QTextLength::PercentageLength, columnPercent));
+    }
     tableFormat.setColumnWidthConstraints(rgColumnTextLength);
+
+    return tableFormat;
 }
 
 void Print::print(bool onePackPerFile)
@@ -43,17 +57,11 @@ void Print::print(bool onePackPerFile)
     QString         docDir(QStandardPaths::writableLocation(QStandardPaths::StandardLocation::DocumentsLocation));
     QString         filenamePrefix("PDC Broswer ID File");
 
-    QTextTableFormat tableFormat;
-    tableFormat.setBorder(1);
-    tableFormat.setBorderStyle(QTextFrameFormat::BorderStyle_Solid);
-    tableFormat.setBorderBrush(QBrush(QColor("black")));
-    tableFormat.setWidth(QTextLength(QTextLength::PercentageLength, 100));
-
     if (onePackPerFile) {
         QDir dir(docDir);
         dir.mkdir(filenamePrefix);
     } else {
-        _initDoc(outerCursor, tableFormat);
+        _initDoc(outerCursor);
     }
 
     typedef struct {
@@ -67,11 +75,11 @@ void Print::print(bool onePackPerFile)
         { 0, 1, "Pack Name: ",          "pack" },
         { 1, 0, "Rank: ",               "alphaString" },
         { 1, 1, "Sex: ",                "sexString" },
-        { 2, 0, "DOB: ",                "dob" },
-        { 2, 1, "First Sighting: ",     "firstSighting" },
+        { 2, 0, "DOB: ",                "dobFmt" },
+        { 2, 1, "First Sighting: ",     "firstSightingFmt" },
         { 3, 0, "Related To Female: ",  "mother" },
         { 3, 1, "Related To Male: ",    "father" },
-        { 4, 0, "Date Collared: ",      "collarDate" },
+        { 4, 0, "Date Collared: ",      "collarDateFmt" },
         { 4, 1, "Collar Freq: ",        "collarFreq" },
     };
 
@@ -88,32 +96,28 @@ void Print::print(bool onePackPerFile)
         if (onePackPerFile) {
             doc = &innerDoc;
             cursor = &innerCursor;
-            _initDoc(innerCursor, tableFormat);
+            _initDoc(innerCursor);
         } else {
             doc = &outerDoc;
             cursor = &outerCursor;
         }
 
         QSqlQueryModel dogQuery;
-        dogQuery.setQuery(QStringLiteral("SELECT *, "
-                                            "CASE "
-                                                "WHEN alpha = 1 THEN 'A' "
-                                                "ELSE ' ' "
-                                                "END AS alphaString, "
-                                            "CASE "
-                                                "WHEN sex = 1 THEN 'F' "
-                                                "WHEN sex = 2 THEN 'M' "
-                                                "ELSE 'U' "
-                                            "END AS sexString "
+        dogQuery.setQuery(QStringLiteral("SELECT name, pack, mother, father, collarFreq,"
+                                            "CASE WHEN alpha = 1 THEN 'Alpha' ELSE ' ' END AS alphaString, "
+                                            "CASE WHEN sex = 1 THEN 'Female' WHEN sex = 2 THEN 'Male' ELSE 'Unknown' END AS sexString, "
+                                            "strftime('%d/%m/%Y', dob) as dobFmt, "
+                                            "strftime('%d/%m/%Y', firstSighting) as firstSightingFmt, "
+                                            "strftime('%d/%m/%Y', collarDate) as collarDateFmt "
                                         "FROM Dogs "
                                          "WHERE pack = '%1' "
-                                         "ORDER BY name ").arg(packName));
+                                         "order by alpha desc, sex, name ").arg(packName));
         for (int dogRow=0; dogRow<dogQuery.rowCount(); dogRow++) {
             QString dogName = dogQuery.record(dogRow).value("name").toString();
 
             cursor->insertText(dogName + " - " + packName);
 
-            QTextTable* table = cursor->insertTable(1, 2, tableFormat);
+            QTextTable* table = cursor->insertTable(2, 1, _tableFormat(1 /* cColumns */));
 
             QSqlQueryModel photoQuery;
             photoQuery.setQuery(QStringLiteral("SELECT * FROM Photos WHERE dog = '%1'").arg(dogName));
@@ -127,20 +131,20 @@ void Print::print(bool onePackPerFile)
                 if (image.isNull()) {
                     qDebug() << "image.isNull";
                 }
-                image = image.scaledToWidth(230);
+                image = image.scaledToHeight(250);
                 QString imageURL = QStringLiteral("image://Photos/%1").arg(id);
                 doc->addResource(QTextDocument::ImageResource, imageURL, QVariant(image));
 
                 QTextImageFormat imageFormat;
                 imageFormat.setName(imageURL);
-                QTextCursor cellCursor = table->cellAt(0, leftPhoto ? 0 : 1).firstCursorPosition();
+                QTextCursor cellCursor = table->cellAt(leftPhoto ? 0 : 1, 0).firstCursorPosition();
                 cellCursor.insertImage(imageFormat);
             }
 
             cursor->insertBlock(QTextBlockFormat());
             cursor->movePosition(QTextCursor::End);
 
-            table = cursor->insertTable(9, 2, tableFormat);
+            table = cursor->insertTable(5, 2, _tableFormat(2 /* cColumns */));
             for (size_t i=0; i<sizeof(rgTableCellInfo)/sizeof(rgTableCellInfo[0]); i++) {
                 const TableCellInfo_t& cellInfo = rgTableCellInfo[i];
 

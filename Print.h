@@ -19,5 +19,7 @@ public:
 
 private:
     static void _printDoc(const QTextDocument& doc, const QString& filename);
-    static void _initDoc(QTextCursor& cursor, QTextTableFormat& tableFormat);
+    static void _initDoc(QTextCursor& cursor);
+    static QTextTableFormat _tableFormat(int cColumns);
+
 };
